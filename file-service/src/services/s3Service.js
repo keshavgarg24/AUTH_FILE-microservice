@@ -18,13 +18,39 @@ class S3Service {
       accessKeyId: config.cloudflare.accessKeyId,
       secretAccessKey: config.cloudflare.secretAccessKey,
       endpoint: config.cloudflare.endpoint,
-      region: 'auto', // Cloudflare R2 uses 'auto' region
+      region: config.cloudflare.region, // Use configured region
       s3ForcePathStyle: true, // Required for R2
       signatureVersion: 'v4',
-      signatureVersion: 'v4'
+      sslEnabled: true,
+      s3BucketEndpoint: false
     });
     
     this.bucketName = config.cloudflare.bucketName;
+    
+    // Test R2 connection on startup
+    this.testConnection();
+  }
+
+  /**
+   * Test R2 connection
+   */
+  async testConnection() {
+    try {
+      console.log('Testing R2 connection...');
+      console.log('Account ID:', config.cloudflare.accountId);
+      console.log('Endpoint:', config.cloudflare.endpoint);
+      console.log('Region:', config.cloudflare.region);
+      console.log('Bucket:', this.bucketName);
+      console.log('Access Key ID:', config.cloudflare.accessKeyId ? config.cloudflare.accessKeyId.substring(0, 8) + '...' : 'NOT SET');
+      
+      const result = await this.s3.headBucket({ Bucket: this.bucketName }).promise();
+      console.log('✓ R2 connection successful');
+    } catch (error) {
+      console.error('✗ R2 connection failed:', error.message);
+      console.error('Error code:', error.code);
+      console.error('Status code:', error.statusCode);
+      console.error('Check your R2 credentials and endpoint configuration');
+    }
   }
 
   /**

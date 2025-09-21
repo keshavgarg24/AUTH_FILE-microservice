@@ -1,6 +1,6 @@
-# Simple Auth & File Upload Microservices
+# FileVault - Secure Document Storage Microservices
 
-A Node.js microservices solution with user authentication and file upload capabilities.
+A modern Node.js microservices solution with user authentication and secure file storage using Cloudflare R2 (S3-compatible) storage.
 
 ## Project Structure
 
@@ -46,25 +46,30 @@ auth-file-microservices/
 - User login with JWT token generation
 - Password hashing with bcrypt (never store plain text)
 - File upload (max 50MB, non-multipart)
-- Files saved to Cloudflare R2 using AWS SDK (S3-compatible)
+- **Cloudflare R2 Storage** - S3-compatible cloud storage with local fallback
 - File metadata stored in MongoDB
 - JWT authentication required for file operations
 - Presigned download URLs for secure file access
+- **Document Viewer** - Preview PDFs, images, and text files in-browser
 
-### Bonus Features
-- GET /me endpoint for user profile
-- Request logging (console.log method & path)
-- Modern web UI with dark/light mode toggle
-- Responsive design with white, yellow, and orange color scheme
-- Drag & drop file upload interface
-- Real-time file management with progress indicators
+### Modern UI Features
+- **Black & White Design** - Clean, minimal aesthetic with Bookman Old Style typography
+- **Smart Theme Toggle** - Animated SVG icon that switches between light/dark modes
+- **Real-time State Management** - Automatic UI updates without page refresh
+- **Document Preview** - View files directly in the browser with modal viewer
+- **Auto-refresh** - Files list updates automatically every 30 seconds
+- **Responsive Design** - Works seamlessly on desktop, tablet, and mobile
+- **Drag & Drop Upload** - Simply drag files to upload or click to browse
+- **Progress Indicators** - Real-time upload progress with file size validation
+- **Toast Notifications** - Elegant feedback for all user actions
 
 ### Tech Stack
-- Node.js & Express.js
-- MongoDB with Mongoose
-- Cloudflare R2 (S3-compatible storage)
-- JWT with HMAC signing
-- bcrypt for password hashing
+- **Frontend**: Vanilla JavaScript with modern state management
+- **Backend**: Node.js & Express.js
+- **Database**: MongoDB with Mongoose
+- **Storage**: Cloudflare R2 (S3-compatible) with local fallback
+- **Authentication**: JWT with HMAC signing
+- **Security**: bcrypt password hashing, presigned URLs
 
 ## Quick Start
 
@@ -100,10 +105,17 @@ BCRYPT_ROUNDS=12
 PORT=3002
 MONGODB_URI=mongodb://localhost:27017/file_service
 JWT_SECRET=your-super-secret-jwt-key
-CLOUDFLARE_ACCESS_KEY_ID=your-cloudflare-r2-access-key-id
-CLOUDFLARE_SECRET_ACCESS_KEY=your-cloudflare-r2-secret-access-key
-CLOUDFLARE_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
-R2_BUCKET_NAME=your-r2-bucket-name
+
+# Cloudflare R2 Configuration (S3-Compatible)
+CLOUDFLARE_R2_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
+CLOUDFLARE_R2_PUBLIC_ENDPOINT=https://pub-your-subdomain.r2.dev
+CLOUDFLARE_R2_ACCOUNT_ID=your-cloudflare-account-id
+CLOUDFLARE_R2_ACCESS_KEY_ID=your-r2-access-key-id
+CLOUDFLARE_R2_SECRET_ACCESS_KEY=your-r2-secret-access-key
+CLOUDFLARE_R2_BUCKET=your-bucket-name
+CLOUDFLARE_R2_BUCKET_REGION=auto
+
+# File Upload Configuration
 MAX_FILE_SIZE=52428800
 ```
 
@@ -141,14 +153,39 @@ docker-compose up
 - **Auth Service API**: http://localhost:3001
 - **File Service API**: http://localhost:3002
 
+## Cloudflare R2 Storage Integration
+
+FileVault uses **Cloudflare R2**, an S3-compatible object storage service that provides:
+
+### Why Cloudflare R2?
+- **S3 Compatibility**: Uses the same AWS SDK, making it a drop-in replacement
+- **Cost Effective**: No egress fees for downloads
+- **Global Performance**: Cloudflare's global network for fast file access
+- **Automatic Fallback**: Falls back to local storage if R2 is unavailable
+
+### R2 Configuration Steps
+1. **Create Cloudflare Account** and enable R2 storage
+2. **Create R2 Bucket** in the Cloudflare dashboard
+3. **Generate API Tokens** with R2 read/write permissions
+4. **Get Account ID** from the right sidebar in Cloudflare dashboard
+5. **Configure Environment Variables** in `file-service/.env`
+
+### Storage Features
+- **Dual Storage**: Primary R2 cloud storage with local fallback
+- **Presigned URLs**: Secure, time-limited download links (15 min expiry)
+- **File Metadata**: Stored in MongoDB for fast queries
+- **Storage Type Tracking**: UI shows whether files are stored locally or in cloud
+
 ### Modern Web Interface Features
-- **Dark/Light Mode Toggle**: Switch between themes with persistent preference
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
-- **Drag & Drop Upload**: Simply drag files to upload or click to browse
-- **Real-time Progress**: Visual upload progress with file size validation
-- **File Management**: View, download, and delete files with intuitive interface
-- **Toast Notifications**: Real-time feedback for all user actions
-- **Modern Design**: Clean white-based design with yellow/orange accents
+- **Black & White Design**: Minimal aesthetic with Bookman Old Style typography
+- **Smart Theme Toggle**: Animated SVG icon with smooth transitions
+- **Document Viewer**: Preview PDFs, images, and text files in modal
+- **Real-time Updates**: Auto-refresh every 30 seconds without page reload
+- **State Management**: Modern reactive UI updates
+- **Responsive Design**: Works seamlessly on all devices
+- **Drag & Drop Upload**: Intuitive file upload experience
+- **Progress Indicators**: Real-time upload progress with validation
+- **Toast Notifications**: Elegant feedback system
 
 ## API Documentation
 
@@ -393,10 +430,12 @@ docker-compose up -d
    - Ensure MongoDB is running
    - Check MONGODB_URI in .env files
 
-2. **Cloudflare R2 Errors**
-   - Verify Cloudflare R2 credentials in file-service/.env
+2. **Cloudflare R2 Connection Issues**
+   - Verify all R2 environment variables are set correctly
    - Ensure R2 bucket exists and is accessible
-   - Check R2 API token permissions
+   - Check R2 API token has read/write permissions
+   - Verify Account ID matches your Cloudflare account (not from public URL)
+   - Test R2 connection: `cd file-service && node -e "require('./src/services/s3Service')"`
 
 3. **JWT Token Issues**
    - Ensure JWT_SECRET is identical in both services

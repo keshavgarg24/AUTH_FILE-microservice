@@ -42,6 +42,12 @@ const fileSchema = new mongoose.Schema({
     trim: true,
     default: 'application/octet-stream'
   },
+  storageType: {
+    type: String,
+    enum: ['r2', 'local'],
+    default: 'r2',
+    trim: true
+  },
   uploadedAt: {
     type: Date,
     default: Date.now,

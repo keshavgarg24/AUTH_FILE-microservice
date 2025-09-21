@@ -1,5 +1,6 @@
 const fileRepository = require('../repositories/fileRepository');
 const s3Service = require('../services/s3Service');
+const localStorageService = require('../services/localStorageService');
 const { config } = require('../config/env');
 
 class FileController {
@@ -82,10 +83,25 @@ class FileController {
       // Determine content type
       const contentType = s3Service.getMimeType(filename);
 
-      // Upload to S3
-      const s3Result = await s3Service.uploadToS3(fileBuffer, filename, userId, {
-        contentType: contentType
-      });
+      // Try to upload to S3 first, fallback to local storage
+      let uploadResult;
+      let storageType = 'r2';
+      
+      try {
+        uploadResult = await s3Service.uploadToS3(fileBuffer, filename, userId, {
+          contentType: contentType
+        });
+        console.log('✓ File uploaded to R2 successfully');
+      } catch (s3Error) {
+        console.warn('⚠ R2 upload failed, falling back to local storage:', s3Error.message);
+        
+        // Fallback to local storage
+        uploadResult = await localStorageService.uploadToLocal(fileBuffer, filename, userId, {
+          contentType: contentType
+        });
+        storageType = 'local';
+        console.log('✓ File uploaded to local storage successfully');
+      }
 
       // Save file metadata to database
       const fileMetadata = {
@@ -93,9 +109,10 @@ class FileController {
         originalName: filename,
         size: fileBuffer.length,
         userId: userId,
-        s3Key: s3Result.s3Key,
-        s3Bucket: s3Result.bucket,
-        mimeType: contentType
+        s3Key: uploadResult.s3Key || uploadResult.localPath,
+        s3Bucket: uploadResult.bucket || 'local',
+        mimeType: contentType,
+        storageType: storageType
       };
 
       const savedFile = await fileRepository.create(fileMetadata);
@@ -108,6 +125,7 @@ class FileController {
         size: savedFile.size,
         s3Key: savedFile.s3Key,
         mimeType: savedFile.mimeType,
+        storageType: storageType,
         uploadedAt: savedFile.uploadedAt
       });
 
@@ -186,36 +204,57 @@ class FileController {
         });
       }
 
-      // Check if file exists in S3
-      const fileExists = await s3Service.fileExists(file.s3Key);
-      if (!fileExists) {
-        return res.status(404).json({
-          error: {
-            message: 'File not found in storage',
-            code: 'FILE_NOT_IN_STORAGE'
-          }
-        });
-      }
+      let downloadUrl;
+      let expiresIn = null;
+      let expiresAt = null;
 
-      // Generate presigned URL
-      const urlResult = await s3Service.generatePresignedUrl(file.s3Key, {
-        expiresIn: 900, // 15 minutes
-        filename: file.filename,
-        forceDownload: req.query.download === 'true'
-      });
+      if (file.storageType === 'local') {
+        // For local files, create a direct URL
+        const pathParts = file.s3Key.split('/');
+        const filename = pathParts[pathParts.length - 1];
+        downloadUrl = `${req.protocol}://${req.get('host')}/api/files/local/${userId}/${filename}`;
+      } else {
+        // Check if file exists in S3
+        const fileExists = await s3Service.fileExists(file.s3Key);
+        if (!fileExists) {
+          return res.status(404).json({
+            error: {
+              message: 'File not found in storage',
+              code: 'FILE_NOT_IN_STORAGE'
+            }
+          });
+        }
+
+        // Generate presigned URL for R2
+        const urlResult = await s3Service.generatePresignedUrl(file.s3Key, {
+          expiresIn: 900, // 15 minutes
+          filename: file.filename,
+          forceDownload: req.query.download === 'true'
+        });
+        
+        downloadUrl = urlResult.downloadUrl;
+        expiresIn = urlResult.expiresIn;
+        expiresAt = urlResult.expiresAt;
+      }
 
       // Increment download count
       await fileRepository.incrementDownloadCount(fileId);
 
       // Return download URL
-      res.json({
-        downloadUrl: urlResult.downloadUrl,
+      const response = {
+        downloadUrl: downloadUrl,
         filename: file.filename,
         size: file.size,
         mimeType: file.mimeType,
-        expiresIn: urlResult.expiresIn,
-        expiresAt: urlResult.expiresAt
-      });
+        storageType: file.storageType
+      };
+
+      if (expiresIn) {
+        response.expiresIn = expiresIn;
+        response.expiresAt = expiresAt;
+      }
+
+      res.json(response);
 
     } catch (error) {
       console.error('Get download URL error:', error);

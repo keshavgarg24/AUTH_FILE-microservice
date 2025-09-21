@@ -4,16 +4,21 @@ require('dotenv').config();
 const requiredEnvVars = [
   'MONGODB_URI',
   'JWT_SECRET',
-  'CLOUDFLARE_ACCESS_KEY_ID',
-  'CLOUDFLARE_SECRET_ACCESS_KEY',
-  'CLOUDFLARE_ENDPOINT',
-  'R2_BUCKET_NAME'
+  'CLOUDFLARE_R2_ACCESS_KEY_ID',
+  'CLOUDFLARE_R2_SECRET_ACCESS_KEY',
+  'CLOUDFLARE_R2_ENDPOINT',
+  'CLOUDFLARE_R2_BUCKET',
+  'CLOUDFLARE_R2_ACCOUNT_ID'
 ];
 
 const optionalEnvVars = {
   PORT: 3002,
-  MAX_FILE_SIZE: 52428800 // 50MB in bytes
+  MAX_FILE_SIZE: 52428800, // 50MB in bytes
+  CLOUDFLARE_R2_PUBLIC_ENDPOINT: null, // Optional public URL for downloads
+  CLOUDFLARE_R2_BUCKET_REGION: 'auto'
 };
+
+
 
 function validateEnvironment() {
   const missing = [];
@@ -49,10 +54,13 @@ const config = {
     secret: process.env.JWT_SECRET
   },
   cloudflare: {
-    accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID,
-    secretAccessKey: process.env.CLOUDFLARE_SECRET_ACCESS_KEY,
-    endpoint: process.env.CLOUDFLARE_ENDPOINT,
-    bucketName: process.env.R2_BUCKET_NAME
+    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+    endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
+    bucketName: process.env.CLOUDFLARE_R2_BUCKET,
+    accountId: process.env.CLOUDFLARE_R2_ACCOUNT_ID,
+    region: process.env.CLOUDFLARE_R2_BUCKET_REGION || 'auto',
+    publicUrl: process.env.CLOUDFLARE_R2_PUBLIC_ENDPOINT
   },
   upload: {
     maxFileSize: parseInt(process.env.MAX_FILE_SIZE) || 52428800
