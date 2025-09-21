@@ -46,7 +46,7 @@ auth-file-microservices/
 - User login with JWT token generation
 - Password hashing with bcrypt (never store plain text)
 - File upload (max 50MB, non-multipart)
-- Files saved to AWS S3 using AWS SDK
+- Files saved to Cloudflare R2 using AWS SDK (S3-compatible)
 - File metadata stored in MongoDB
 - JWT authentication required for file operations
 - Presigned download URLs for secure file access
@@ -54,12 +54,15 @@ auth-file-microservices/
 ### Bonus Features
 - GET /me endpoint for user profile
 - Request logging (console.log method & path)
-- Modern web UI for complete user experience
+- Modern web UI with dark/light mode toggle
+- Responsive design with white, yellow, and orange color scheme
+- Drag & drop file upload interface
+- Real-time file management with progress indicators
 
 ### Tech Stack
 - Node.js & Express.js
 - MongoDB with Mongoose
-- AWS S3 SDK
+- Cloudflare R2 (S3-compatible storage)
 - JWT with HMAC signing
 - bcrypt for password hashing
 
@@ -68,7 +71,7 @@ auth-file-microservices/
 ### Prerequisites
 - Node.js (v14 or higher)
 - MongoDB (running locally or connection string)
-- AWS Account with S3 bucket
+- Cloudflare account with R2 storage
 
 ### 1. Installation
 
@@ -97,10 +100,10 @@ BCRYPT_ROUNDS=12
 PORT=3002
 MONGODB_URI=mongodb://localhost:27017/file_service
 JWT_SECRET=your-super-secret-jwt-key
-AWS_ACCESS_KEY_ID=your-aws-access-key
-AWS_SECRET_ACCESS_KEY=your-aws-secret-key
-AWS_REGION=us-east-1
-S3_BUCKET_NAME=your-s3-bucket-name
+CLOUDFLARE_ACCESS_KEY_ID=your-cloudflare-r2-access-key-id
+CLOUDFLARE_SECRET_ACCESS_KEY=your-cloudflare-r2-secret-access-key
+CLOUDFLARE_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
+R2_BUCKET_NAME=your-r2-bucket-name
 MAX_FILE_SIZE=52428800
 ```
 
@@ -134,9 +137,18 @@ docker-compose up
 ```
 
 ### 4. Access the Application
-- Web Interface: http://localhost:3000
-- Auth Service API: http://localhost:3001
-- File Service API: http://localhost:3002
+- **Web Interface**: http://localhost:3000 (Modern UI with dark/light mode)
+- **Auth Service API**: http://localhost:3001
+- **File Service API**: http://localhost:3002
+
+### Modern Web Interface Features
+- **Dark/Light Mode Toggle**: Switch between themes with persistent preference
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
+- **Drag & Drop Upload**: Simply drag files to upload or click to browse
+- **Real-time Progress**: Visual upload progress with file size validation
+- **File Management**: View, download, and delete files with intuitive interface
+- **Toast Notifications**: Real-time feedback for all user actions
+- **Modern Design**: Clean white-based design with yellow/orange accents
 
 ## API Documentation
 
@@ -244,7 +256,7 @@ curl -X GET http://localhost:3002/file/507f1f77bcf86cd799439012 \
 **Response:**
 ```json
 {
-  "downloadUrl": "https://your-bucket.s3.amazonaws.com/presigned-url",
+  "downloadUrl": "https://your-account-id.r2.cloudflarestorage.com/presigned-url",
   "filename": "document.pdf",
   "size": 1024000,
   "mimeType": "application/pdf",
@@ -381,10 +393,10 @@ docker-compose up -d
    - Ensure MongoDB is running
    - Check MONGODB_URI in .env files
 
-2. **AWS S3 Errors**
-   - Verify AWS credentials in file-service/.env
-   - Ensure S3 bucket exists and is accessible
-   - Check IAM permissions for S3 operations
+2. **Cloudflare R2 Errors**
+   - Verify Cloudflare R2 credentials in file-service/.env
+   - Ensure R2 bucket exists and is accessible
+   - Check R2 API token permissions
 
 3. **JWT Token Issues**
    - Ensure JWT_SECRET is identical in both services

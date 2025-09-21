@@ -58,10 +58,10 @@ services:
       - PORT=3002
       - MONGODB_URI=mongodb://admin:password123@mongo:27017/file_service?authSource=admin
       - JWT_SECRET=development-jwt-secret-change-in-production
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_REGION=${AWS_REGION:-us-east-1}
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - CLOUDFLARE_ACCESS_KEY_ID=${CLOUDFLARE_ACCESS_KEY_ID}
+      - CLOUDFLARE_SECRET_ACCESS_KEY=${CLOUDFLARE_SECRET_ACCESS_KEY}
+      - CLOUDFLARE_ENDPOINT=${CLOUDFLARE_ENDPOINT}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
       - MAX_FILE_SIZE=52428800
       - LOG_LEVEL=info
     depends_on:

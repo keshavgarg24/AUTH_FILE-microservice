@@ -13,15 +13,18 @@ function uuidv4() {
 
 class S3Service {
   constructor() {
-    // Configure AWS SDK
+    // Configure AWS SDK for Cloudflare R2
     this.s3 = new AWS.S3({
-      accessKeyId: config.aws.accessKeyId,
-      secretAccessKey: config.aws.secretAccessKey,
-      region: config.aws.region,
+      accessKeyId: config.cloudflare.accessKeyId,
+      secretAccessKey: config.cloudflare.secretAccessKey,
+      endpoint: config.cloudflare.endpoint,
+      region: 'auto', // Cloudflare R2 uses 'auto' region
+      s3ForcePathStyle: true, // Required for R2
+      signatureVersion: 'v4',
       signatureVersion: 'v4'
     });
     
-    this.bucketName = config.aws.s3BucketName;
+    this.bucketName = config.cloudflare.bucketName;
   }
 
   /**

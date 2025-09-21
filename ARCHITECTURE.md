@@ -43,7 +43,7 @@ This microservices architecture consists of two main backend services and an opt
 │ Features:               │ Features:                             │
 │ • JWT Generation        │ • JWT Validation                      │
 │ • Password Hashing      │ • File Upload (50MB max)             │
-│ • User Management       │ • S3 Integration                      │
+│ • User Management       │ • R2 Integration                      │
 │ • Request Logging       │ • Presigned URLs                      │
 └─────────────────────────┴───────────────────────────────────────┘
                            │
@@ -51,7 +51,7 @@ This microservices architecture consists of two main backend services and an opt
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Data Layer                                   │
 ├─────────────────────────┬───────────────────────────────────────┤
-│      MongoDB            │         AWS S3                        │
+│      MongoDB            │    Cloudflare R2 Storage              │
 ├─────────────────────────┼───────────────────────────────────────┤
 │                         │                                       │
 │ Collections:            │ Storage:                              │
@@ -68,7 +68,7 @@ This microservices architecture consists of two main backend services and an opt
 │   filename: String      │ Features:                             │
 │   size: Number          │ • Server-side encryption             │
 │   userId: ObjectId      │ • Presigned URLs                      │
-│   s3Key: String         │ • Access control                      │
+│   r2Key: String         │ • Access control                      │
 │   mimeType: String      │ • Automatic cleanup                   │
 │   uploadedAt: Date      │                                       │
 │   isActive: Boolean     │                                       │
@@ -99,8 +99,8 @@ This microservices architecture consists of two main backend services and an opt
 ```
 1. Client → POST /upload (with JWT) → File Service
 2. File Service → Validate JWT token
-3. File Service → Generate unique S3 key
-4. File Service → Upload file to S3
+3. File Service → Generate unique R2 key
+4. File Service → Upload file to R2
 5. File Service → Store metadata in MongoDB
 6. File Service → Return file information
 ```
@@ -110,9 +110,9 @@ This microservices architecture consists of two main backend services and an opt
 1. Client → GET /file/:id (with JWT) → File Service
 2. File Service → Validate JWT token
 3. File Service → Verify file ownership
-4. File Service → Generate presigned S3 URL
+4. File Service → Generate presigned R2 URL
 5. File Service → Return download URL
-6. Client → Direct download from S3 using presigned URL
+6. Client → Direct download from R2 using presigned URL
 ```
 
 ## Security Architecture
@@ -124,9 +124,9 @@ This microservices architecture consists of two main backend services and an opt
 - **File Ownership**: Users can only access their own files
 
 ### Data Protection
-- **Encryption at Rest**: S3 server-side encryption (AES256)
+- **Encryption at Rest**: R2 server-side encryption (AES256)
 - **Encryption in Transit**: HTTPS for all API communications
-- **Presigned URLs**: Time-limited access (15 minutes) to S3 objects
+- **Presigned URLs**: Time-limited access (15 minutes) to R2 objects
 - **Input Validation**: Request validation and sanitization
 
 ## Scalability Considerations
@@ -139,7 +139,7 @@ This microservices architecture consists of two main backend services and an opt
 ### Performance Optimization
 - **Connection Pooling**: MongoDB connection pooling for efficient database access
 - **Caching**: JWT token validation can be cached
-- **CDN Integration**: S3 can be fronted by CloudFront for global distribution
+- **CDN Integration**: R2 can be fronted by Cloudflare CDN for global distribution
 
 ## Deployment Architecture
 
@@ -150,7 +150,7 @@ Local Machine:
 ├─ file-service (localhost:3002)
 ├─ user-ui (localhost:3000)
 ├─ MongoDB (localhost:27017)
-└─ AWS S3 (remote)
+└─ Cloudflare R2 (remote)
 ```
 
 ### Production Environment
@@ -160,7 +160,7 @@ Cloud Infrastructure:
 ├─ Auth Service Instances (multiple)
 ├─ File Service Instances (multiple)
 ├─ MongoDB Cluster (replica set)
-├─ AWS S3 (with CloudFront)
+├─ Cloudflare R2 (with CDN)
 └─ Monitoring & Logging
 ```
 
@@ -172,7 +172,7 @@ Cloud Infrastructure:
 - **Database**: MongoDB with Mongoose ODM
 - **Authentication**: JWT with jsonwebtoken library
 - **Password Hashing**: bcrypt
-- **File Storage**: AWS S3 SDK v2
+- **File Storage**: Cloudflare R2 (S3-compatible SDK)
 - **Testing**: Jest
 
 ### Frontend (Optional)
@@ -214,14 +214,14 @@ Cloud Infrastructure:
 ### Health Checks
 - Service health endpoints for monitoring
 - Database connection status
-- S3 connectivity verification
+- R2 connectivity verification
 
 ## Configuration Management
 
 ### Environment Variables
 - Service ports and URLs
 - Database connection strings
-- AWS credentials and S3 bucket names
+- Cloudflare R2 credentials and bucket names
 - JWT secrets and bcrypt rounds
 - File size limits and other constraints
 

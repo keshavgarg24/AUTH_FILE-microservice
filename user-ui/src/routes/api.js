@@ -108,8 +108,8 @@ router.get('/auth/me', async (req, res) => {
   }
 });
 
-// File endpoints
-router.post('/files/upload', upload.single('file'), async (req, res) => {
+// File endpoints - Handle raw binary upload
+router.post('/files/upload', express.raw({ type: 'application/octet-stream', limit: '50mb' }), async (req, res) => {
   const token = req.cookies.authToken;
   
   if (!token) {
@@ -121,11 +121,21 @@ router.post('/files/upload', upload.single('file'), async (req, res) => {
     });
   }
 
-  if (!req.file) {
+  const filename = req.query.filename;
+  if (!filename) {
     return res.status(400).json({
       error: {
-        message: 'No file provided',
-        code: 'NO_FILE'
+        message: 'Filename query parameter is required',
+        code: 'MISSING_FILENAME'
+      }
+    });
+  }
+
+  if (!req.body || req.body.length === 0) {
+    return res.status(400).json({
+      error: {
+        message: 'No file data provided',
+        code: 'NO_FILE_DATA'
       }
     });
   }
@@ -133,8 +143,8 @@ router.post('/files/upload', upload.single('file'), async (req, res) => {
   try {
     const response = await axios({
       method: 'POST',
-      url: `${FILE_SERVICE_URL}/upload?filename=${encodeURIComponent(req.file.originalname)}`,
-      data: req.file.buffer,
+      url: `${FILE_SERVICE_URL}/upload?filename=${encodeURIComponent(filename)}`,
+      data: req.body,
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/octet-stream'

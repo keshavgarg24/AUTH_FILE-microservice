@@ -4,10 +4,10 @@ require('dotenv').config();
 const requiredEnvVars = [
   'MONGODB_URI',
   'JWT_SECRET',
-  'AWS_ACCESS_KEY_ID',
-  'AWS_SECRET_ACCESS_KEY',
-  'AWS_REGION',
-  'S3_BUCKET_NAME'
+  'CLOUDFLARE_ACCESS_KEY_ID',
+  'CLOUDFLARE_SECRET_ACCESS_KEY',
+  'CLOUDFLARE_ENDPOINT',
+  'R2_BUCKET_NAME'
 ];
 
 const optionalEnvVars = {
@@ -48,11 +48,11 @@ const config = {
   jwt: {
     secret: process.env.JWT_SECRET
   },
-  aws: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION,
-    s3BucketName: process.env.S3_BUCKET_NAME
+  cloudflare: {
+    accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID,
+    secretAccessKey: process.env.CLOUDFLARE_SECRET_ACCESS_KEY,
+    endpoint: process.env.CLOUDFLARE_ENDPOINT,
+    bucketName: process.env.R2_BUCKET_NAME
   },
   upload: {
     maxFileSize: parseInt(process.env.MAX_FILE_SIZE) || 52428800

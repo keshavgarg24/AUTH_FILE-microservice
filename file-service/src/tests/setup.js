@@ -5,10 +5,10 @@ const mongoose = require('mongoose');
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-secret-key-for-testing';
 process.env.MONGODB_URI = 'mongodb://localhost:27017/file_service_test';
-process.env.AWS_ACCESS_KEY_ID = 'test-access-key';
-process.env.AWS_SECRET_ACCESS_KEY = 'test-secret-key';
-process.env.AWS_REGION = 'us-east-1';
-process.env.S3_BUCKET_NAME = 'test-bucket';
+process.env.CLOUDFLARE_ACCESS_KEY_ID = 'test-access-key';
+process.env.CLOUDFLARE_SECRET_ACCESS_KEY = 'test-secret-key';
+process.env.CLOUDFLARE_ENDPOINT = 'https://test-account.r2.cloudflarestorage.com';
+process.env.R2_BUCKET_NAME = 'test-bucket';
 process.env.MAX_FILE_SIZE = '52428800';
 
 // Global test setup

@@ -36,11 +36,26 @@ class FileController {
 
       // Get file buffer from request body
       const fileBuffer = req.body;
+      
+      // Debug logging
+      console.log('Upload Debug Info:');
+      console.log('- Content-Type:', req.get('Content-Type'));
+      console.log('- Body type:', typeof fileBuffer);
+      console.log('- Is Buffer:', Buffer.isBuffer(fileBuffer));
+      console.log('- Body length:', fileBuffer ? fileBuffer.length : 'undefined');
+      console.log('- Filename:', filename);
+      
       if (!fileBuffer || !Buffer.isBuffer(fileBuffer) || fileBuffer.length === 0) {
         return res.status(400).json({
           error: {
             message: 'File data is required in request body',
-            code: 'MISSING_FILE_DATA'
+            code: 'MISSING_FILE_DATA',
+            debug: {
+              bodyType: typeof fileBuffer,
+              isBuffer: Buffer.isBuffer(fileBuffer),
+              bodyLength: fileBuffer ? fileBuffer.length : null,
+              contentType: req.get('Content-Type')
+            }
           }
         });
       }

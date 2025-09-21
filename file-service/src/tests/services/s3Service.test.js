@@ -2,10 +2,10 @@ const AWS = require('aws-sdk-mock');
 const s3Service = require('../../services/s3Service');
 
 // Mock environment variables
-process.env.AWS_ACCESS_KEY_ID = 'test-access-key';
-process.env.AWS_SECRET_ACCESS_KEY = 'test-secret-key';
-process.env.AWS_REGION = 'us-east-1';
-process.env.S3_BUCKET_NAME = 'test-bucket';
+process.env.CLOUDFLARE_ACCESS_KEY_ID = 'test-access-key';
+process.env.CLOUDFLARE_SECRET_ACCESS_KEY = 'test-secret-key';
+process.env.CLOUDFLARE_ENDPOINT = 'https://test-account.r2.cloudflarestorage.com';
+process.env.R2_BUCKET_NAME = 'test-bucket';
 process.env.MAX_FILE_SIZE = '52428800';
 
 describe('S3Service', () => {

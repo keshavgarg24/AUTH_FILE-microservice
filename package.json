@@ -1,0 +1,14 @@
+{
+  "name": "auth-file-microservices",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npm-run-all --parallel start:*",
+    "start:auth": "cd auth-service && npm start",
+    "start:file": "cd file-service && npm start",
+    "start:ui": "cd user-ui && npm start",
+    "dev": "npm-run-all --parallel dev:*",
+    "dev:auth": "cd auth-service && npm run dev",
+    "dev:file": "cd file-service && npm run dev",
+    "dev:ui": "cd user-ui && npm run dev"
+  }
+}
