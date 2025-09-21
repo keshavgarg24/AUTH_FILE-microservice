@@ -2,6 +2,12 @@
 
 A modern Node.js microservices solution with user authentication and secure file storage using Cloudflare R2 (S3-compatible) storage.
 
+
+
+https://github.com/user-attachments/assets/870e510c-4ea2-4822-b209-441abf412edf
+
+
+
 ## Project Structure
 
 ```
